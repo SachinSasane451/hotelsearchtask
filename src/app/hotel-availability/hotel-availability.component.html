@@ -1,0 +1,137 @@
+<div class="availability-container">
+    <div class="availability-header">
+      <h1>Available Hotels</h1>
+      <p>We found {{hotels.length}} properties matching your criteria in {{location}}</p>
+    </div>
+    
+    <div class="search-filters">
+      <div class="filter-item active">
+        <i class="fas fa-sliders-h"></i>
+        <span>Filters</span>
+      </div>
+      <div class="filter-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>Distance</span>
+      </div>
+      <div class="filter-item">
+        <i class="fas fa-star"></i>
+        <span>Rating</span>
+      </div>
+      <div class="filter-item">
+        <i class="fas fa-wallet"></i>
+        <span>Price</span>
+      </div>
+      <div class="filter-item">
+        <i class="fas fa-utensils"></i>
+        <span>Breakfast</span>
+      </div>
+      <div class="filter-item">
+        <i class="fas fa-swimming-pool"></i>
+        <span>Pool</span>
+      </div>
+    </div>
+    
+    <div *ngIf="hotels.length === 0 && !loading" class="no-results">
+      <i class="fas fa-hotel"></i>
+      <h3>No hotels found matching your criteria</h3>
+      <p>Try adjusting your filters or search in a different location</p>
+      <button class="retry-button" (click)="retrySearch()">
+        <i class="fas fa-sync-alt"></i> Try Again
+      </button>
+    </div>
+    
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+    
+    <div class="hotel-list">
+      <div *ngFor="let hotel of displayedHotels" class="hotel-card" [class.featured]="hotel.isFeatured">
+        <div class="hotel-image-container">
+          <img [src]="hotel.heroImage || 'assets/default-hotel.jpg'" alt="{{ hotel.name }}" class="hotel-image" 
+               (error)="handleImageError($event)" />
+          <div class="rating-badge">
+            <i class="fas fa-star"></i>
+            {{ hotel.starRating | number:'1.1-1' }}
+          </div>
+          <div class="image-count" *ngIf="hotel.imageCount > 0">
+            <i class="fas fa-camera"></i> {{ hotel.imageCount }}+
+          </div>
+        </div>
+        
+        <div class="hotel-details">
+          <h2>
+            {{ hotel.name }}
+            <i *ngIf="hotel.isVerified" class="fas fa-check-circle verified-badge" title="Verified"></i>
+          </h2>
+          
+          <div class="location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ hotel.address }}</span>
+            <span class="distance" *ngIf="hotel.distance">{{ hotel.distance }} km from center</span>
+          </div>
+          
+          <div class="reviews">
+            <div class="stars">
+              <i class="fas fa-star" *ngFor="let star of getStars(hotel.userReview.rating)"></i>
+              <i class="far fa-star" *ngFor="let star of getEmptyStars(hotel.userReview.rating)"></i>
+              <span class="highlight">{{ hotel.userReview.rating | number:'1.1-1' }}/5</span>
+              <span>({{ hotel.userReview.count | number }} reviews)</span>
+            </div>
+          </div>
+          
+          <div *ngIf="hotel.deal" class="deal-badge">
+            <i class="fas fa-bolt"></i> {{ hotel.deal }}
+          </div>
+          
+          <div class="facilities">
+            <span *ngFor="let facility of getTopFacilities(hotel.facilities)" class="facility">
+              <i class="fas" [ngClass]="getFacilityIcon(facility.name)"></i> {{ facility.name }}
+            </span>
+            <span class="facility" *ngIf="hotel.facilities.length > 3">
+              <i class="fas fa-plus"></i> {{ hotel.facilities.length - 3 }} more
+            </span>
+          </div>
+        </div>
+        
+        <div class="hotel-price">
+          <div class="price-container">
+            <div class="original-price" *ngIf="hotel.originalPrice">
+              ₹{{ hotel.originalPrice / 100 | number:'1.0-0' }}
+            </div>
+            <div class="price">
+              <span class="currency">₹</span>{{ hotel.rate.total / 100 | number:'1.0-0' }}
+            </div>
+            <div class="discount" *ngIf="hotel.discount">
+              Save {{ hotel.discount }}%
+            </div>
+            <div class="tax-info">includes taxes & fees</div>
+            <div class="per-night">per night</div>
+          </div>
+          <button class="book-button" (click)="bookHotel(hotel)">
+            Book Now <i class="fas fa-arrow-right"></i>
+          </button>
+          <div class="view-details" (click)="viewDetails(hotel)">
+            View details <i class="fas fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="pagination-container" *ngIf="hotels.length > itemsPerPage && !loading">
+      <ul class="pagination">
+        <li [class.disabled]="currentPage === 1" class="previous">
+          <a (click)="setPage(currentPage - 1)">
+            <i class="fas fa-chevron-left"></i> Previous
+          </a>
+        </li>
+        <li *ngFor="let page of getPages()" [class.active]="page === currentPage">
+          <a (click)="setPage(page)">{{ page }}</a>
+        </li>
+        <li [class.disabled]="currentPage === pageCount" class="next">
+          <a (click)="setPage(currentPage + 1)">
+            Next <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
